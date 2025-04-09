@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -43,6 +43,28 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     getToken();
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("📩 Foreground message received!");
+      print("Title: ${message.notification?.title}");
+      print("Body: ${message.notification?.body}");
+
+      if (message.notification != null) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(message.notification!.title ?? "Notification"),
+            content: Text(message.notification!.body ?? ""),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+      }
+    });
   }
 
   void getToken() async {
