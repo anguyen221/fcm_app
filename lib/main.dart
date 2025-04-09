@@ -10,7 +10,16 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
+  
   runApp(const MyApp());
+}
+
+Future<void> backgroundMessageHandler(RemoteMessage message) async {
+  print("📩 Background message received!");
+  print("Title: ${message.notification?.title}");
+  print("Body: ${message.notification?.body}");
 }
 
 class MyApp extends StatelessWidget {
@@ -44,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     getToken();
 
+    // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("📩 Foreground message received!");
       print("Title: ${message.notification?.title}");
@@ -64,6 +74,25 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("📩 Tapped on notification");
+      print("Title: ${message.notification?.title}");
+      print("Body: ${message.notification?.body}");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(message.notification!.title ?? "Notification"),
+          content: Text(message.notification!.body ?? ""),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
     });
   }
 
