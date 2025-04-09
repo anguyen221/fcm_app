@@ -82,8 +82,18 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: backgroundColor,
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("OK"),
+                onPressed: () {
+                  print("Action 1 clicked");
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Action 1"),
+              ),
+              TextButton(
+                onPressed: () {
+                  print("Action 2 clicked");
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Action 2"),
               ),
             ],
           ),
@@ -114,8 +124,18 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: backgroundColor, 
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
+              onPressed: () {
+                print("Action 1 clicked");
+                Navigator.of(context).pop();
+              },
+              child: const Text("Action 1"),
+            ),
+            TextButton(
+              onPressed: () {
+                print("Action 2 clicked");
+                Navigator.of(context).pop();
+              },
+              child: const Text("Action 2"),
             ),
           ],
         ),
