@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -49,11 +50,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? _token = "Fetching token...";
   String _customData = "No custom data";
+  List<String> _notificationHistory = [];
 
   @override
   void initState() {
     super.initState();
     getToken();
+    loadNotificationHistory();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("📩 Foreground message received!");
@@ -63,6 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _customData = message.data.toString();
       });
+
+      String notification = "Title: ${message.notification?.title}, Body: ${message.notification?.body}";
+      storeNotificationHistory(notification);
 
       String notificationType = message.data['type'] ?? 'regular'; 
       Color backgroundColor = notificationType == 'important' ? Colors.red : Colors.green;
@@ -94,6 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
         _customData = message.data.toString();
       });
 
+      String notification = "Title: ${message.notification?.title}, Body: ${message.notification?.body}";
+      storeNotificationHistory(notification);
+
       String notificationType = message.data['type'] ?? 'regular'; 
       Color backgroundColor = notificationType == 'important' ? Colors.red : Colors.green;
 
@@ -123,6 +132,24 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> storeNotificationHistory(String notification) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> currentHistory = prefs.getStringList('notificationHistory') ?? [];
+    currentHistory.add(notification);
+    await prefs.setStringList('notificationHistory', currentHistory);
+    setState(() {
+      _notificationHistory = currentHistory;
+    });
+  }
+
+  Future<void> loadNotificationHistory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> history = prefs.getStringList('notificationHistory') ?? [];
+    setState(() {
+      _notificationHistory = history;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,6 +162,18 @@ class _HomeScreenState extends State<HomeScreen> {
             SelectableText("FCM Token: $_token"),
             const SizedBox(height: 16),
             Text("Custom Data: $_customData"),
+            const SizedBox(height: 16),
+            const Text("Notification History:"),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _notificationHistory.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_notificationHistory[index]),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
