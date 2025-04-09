@@ -1,6 +1,9 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; 
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,14 +29,38 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String? _token = "Fetching token...";
+
+  @override
+  void initState() {
+    super.initState();
+    getToken();
+  }
+
+  void getToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+    print("FCM Token: $token");
+    setState(() {
+      _token = token;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text("Welcome to FCM App"),
+    return Scaffold(
+      appBar: AppBar(title: const Text("FCM Token")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SelectableText(_token ?? "No token available"),
       ),
     );
   }
