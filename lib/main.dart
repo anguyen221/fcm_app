@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_sound/flutter_sound.dart'; 
 import 'firebase_options.dart';
 
 void main() async {
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _token = "Fetching token...";
   String _customData = "No custom data";
   List<String> _notificationHistory = [];
+  final FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer(); 
 
   @override
   void initState() {
@@ -63,6 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
       print("Title: ${message.notification?.title}");
       print("Body: ${message.notification?.body}");
 
+      playNotificationSound();
+
       setState(() {
         _customData = message.data.toString();
       });
@@ -70,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String notification = "Title: ${message.notification?.title}, Body: ${message.notification?.body}";
       storeNotificationHistory(notification);
 
-      String notificationType = message.data['type'] ?? 'regular'; 
+      String notificationType = message.data['type'] ?? 'regular';
       Color backgroundColor = notificationType == 'important' ? Colors.red : Colors.green;
 
       if (message.notification != null) {
@@ -106,6 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
       print("Title: ${message.notification?.title}");
       print("Body: ${message.notification?.body}");
 
+      playNotificationSound();
+
       setState(() {
         _customData = message.data.toString();
       });
@@ -113,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String notification = "Title: ${message.notification?.title}, Body: ${message.notification?.body}";
       storeNotificationHistory(notification);
 
-      String notificationType = message.data['type'] ?? 'regular'; 
+      String notificationType = message.data['type'] ?? 'regular';
       Color backgroundColor = notificationType == 'important' ? Colors.red : Colors.green;
 
       showDialog(
@@ -121,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context) => AlertDialog(
           title: Text(message.notification!.title ?? "Notification"),
           content: Text(message.notification!.body ?? ""),
-          backgroundColor: backgroundColor, 
+          backgroundColor: backgroundColor,
           actions: [
             TextButton(
               onPressed: () {
@@ -141,6 +147,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     });
+  }
+
+  void playNotificationSound() async {
+    await _audioPlayer.startPlayer(fromURI: 'assets/notification_sound.mp3');
   }
 
   void getToken() async {
