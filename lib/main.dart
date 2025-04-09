@@ -10,9 +10,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
-  
+
   runApp(const MyApp());
 }
 
@@ -20,6 +20,7 @@ Future<void> backgroundMessageHandler(RemoteMessage message) async {
   print("📩 Background message received!");
   print("Title: ${message.notification?.title}");
   print("Body: ${message.notification?.body}");
+  print("Custom Data: ${message.data}");
 }
 
 class MyApp extends StatelessWidget {
@@ -47,17 +48,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _token = "Fetching token...";
+  String _customData = "No custom data";
 
   @override
   void initState() {
     super.initState();
     getToken();
 
-    // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("📩 Foreground message received!");
       print("Title: ${message.notification?.title}");
       print("Body: ${message.notification?.body}");
+
+      setState(() {
+        _customData = message.data.toString();
+      });
+
+      String notificationType = message.data['type'] ?? 'regular'; 
+      Color backgroundColor = notificationType == 'important' ? Colors.red : Colors.green;
 
       if (message.notification != null) {
         showDialog(
@@ -65,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context) => AlertDialog(
             title: Text(message.notification!.title ?? "Notification"),
             content: Text(message.notification!.body ?? ""),
+            backgroundColor: backgroundColor,
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -80,11 +89,20 @@ class _HomeScreenState extends State<HomeScreen> {
       print("📩 Tapped on notification");
       print("Title: ${message.notification?.title}");
       print("Body: ${message.notification?.body}");
+
+      setState(() {
+        _customData = message.data.toString();
+      });
+
+      String notificationType = message.data['type'] ?? 'regular'; 
+      Color backgroundColor = notificationType == 'important' ? Colors.red : Colors.green;
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(message.notification!.title ?? "Notification"),
           content: Text(message.notification!.body ?? ""),
+          backgroundColor: backgroundColor, 
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -111,7 +129,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text("FCM Token")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SelectableText(_token ?? "No token available"),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText("FCM Token: $_token"),
+            const SizedBox(height: 16),
+            Text("Custom Data: $_customData"),
+          ],
+        ),
       ),
     );
   }
